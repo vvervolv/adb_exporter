@@ -1,0 +1,401 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Per-device metrics from adb_exporter (Prometheus exporter for Android devices over adb).",
+  "editable": true,
+  "graphTooltip": 1,
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["android", "adb", "prometheus"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "Data source",
+        "multi": false,
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      },
+      {
+        "allValue": ".*",
+        "current": { "text": "All", "value": "$__all" },
+        "datasource": { "type": "prometheus", "uid": "${datasource}" },
+        "definition": "label_values(android_farm_adb_online, device)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Device",
+        "multi": true,
+        "name": "device",
+        "options": [],
+        "query": "label_values(android_farm_adb_online, device)",
+        "refresh": 2,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "adb_exporter — Android device farm",
+  "uid": "adb-exporter",
+  "version": 1,
+  "panels": [
+    {
+      "id": 1,
+      "title": "Devices online",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "green", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(android_farm_adb_online{device=~\"$device\"})",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Devices discovered",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "text", "value": null } ] }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_devices_total",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Scrapes failing",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "sum(1 - android_farm_adb_scrape_success{device=~\"$device\"})",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Poll overruns",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "auto"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_poll_overruns_total",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "CPU usage",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_cpu_usage_percent{device=~\"$device\"}",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Memory used",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_memory_used_percent{device=~\"$device\"}",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Battery level",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 20 }, { "color": "green", "value": 50 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_battery_level{device=~\"$device\"}",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Temperatures (battery & thermal max)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 12 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 40 }, { "color": "red", "value": 45 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_battery_temperature_celsius{device=~\"$device\"}",
+          "legendFormat": "battery {{device}}",
+          "refId": "A"
+        },
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_thermal_max_temperature_celsius{device=~\"$device\"}",
+          "legendFormat": "thermal {{device}}",
+          "refId": "B"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Uptime",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": { "drawStyle": "line", "fillOpacity": 0, "showPoints": "never" }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_uptime_seconds{device=~\"$device\"}",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Storage free (/data)",
+      "type": "bargauge",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "min": 0,
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 2000000000 }, { "color": "green", "value": 10000000000 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "displayMode": "gradient", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showUnfilled": true },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_storage_free_bytes{device=~\"$device\"}",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Screen on",
+      "type": "state-timeline",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "fillOpacity": 80, "lineWidth": 0 },
+          "mappings": [
+            { "type": "value", "options": { "0": { "text": "off", "color": "blue" }, "1": { "text": "on", "color": "green" } } }
+          ],
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "blue", "value": null }, { "color": "green", "value": 1 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "showValue": "never", "mergeValues": true, "alignValue": "left", "rowHeight": 0.9, "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        {
+          "datasource": { "type": "prometheus", "uid": "${datasource}" },
+          "expr": "android_farm_screen_on{device=~\"$device\"}",
+          "legendFormat": "{{device}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Device overview",
+      "type": "table",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 28 },
+      "options": { "showHeader": true, "cellHeight": "sm", "footer": { "show": false } },
+      "fieldConfig": {
+        "defaults": { "custom": { "align": "auto", "filterable": true } },
+        "overrides": [
+          { "matcher": { "id": "byName", "options": "CPU %" }, "properties": [ { "id": "unit", "value": "percent" }, { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }, { "id": "min", "value": 0 }, { "id": "max", "value": 100 } ] },
+          { "matcher": { "id": "byName", "options": "Mem %" }, "properties": [ { "id": "unit", "value": "percent" }, { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }, { "id": "min", "value": 0 }, { "id": "max", "value": 100 } ] },
+          { "matcher": { "id": "byName", "options": "Battery %" }, "properties": [ { "id": "unit", "value": "percent" }, { "id": "min", "value": 0 }, { "id": "max", "value": 100 } ] },
+          { "matcher": { "id": "byName", "options": "Battery °C" }, "properties": [ { "id": "unit", "value": "celsius" } ] },
+          { "matcher": { "id": "byName", "options": "Free /data" }, "properties": [ { "id": "unit", "value": "bytes" } ] },
+          { "matcher": { "id": "byName", "options": "Uptime" }, "properties": [ { "id": "unit", "value": "s" } ] },
+          { "matcher": { "id": "byName", "options": "Online" }, "properties": [ { "id": "custom.cellOptions", "value": { "type": "color-text" } }, { "id": "mappings", "value": [ { "type": "value", "options": { "0": { "text": "offline", "color": "red" }, "1": { "text": "online", "color": "green" } } } ] } ] }
+        ]
+      },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_adb_online{device=~\"$device\"}", "format": "table", "instant": true, "refId": "A" },
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_cpu_usage_percent{device=~\"$device\"}", "format": "table", "instant": true, "refId": "B" },
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_memory_used_percent{device=~\"$device\"}", "format": "table", "instant": true, "refId": "C" },
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_battery_level{device=~\"$device\"}", "format": "table", "instant": true, "refId": "D" },
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_battery_temperature_celsius{device=~\"$device\"}", "format": "table", "instant": true, "refId": "E" },
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_storage_free_bytes{device=~\"$device\"}", "format": "table", "instant": true, "refId": "F" },
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_uptime_seconds{device=~\"$device\"}", "format": "table", "instant": true, "refId": "G" }
+      ],
+      "transformations": [
+        { "id": "joinByField", "options": { "byField": "device", "mode": "outer" } },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": { "Time": true, "Time 1": true, "Time 2": true, "Time 3": true, "Time 4": true, "Time 5": true, "Time 6": true, "Time 7": true, "__name__": true, "__name__ 1": true, "__name__ 2": true, "__name__ 3": true, "__name__ 4": true, "__name__ 5": true, "__name__ 6": true, "__name__ 7": true },
+            "indexByName": {},
+            "renameByName": {
+              "device": "Device",
+              "Value #A": "Online",
+              "Value #B": "CPU %",
+              "Value #C": "Mem %",
+              "Value #D": "Battery %",
+              "Value #E": "Battery °C",
+              "Value #F": "Free /data",
+              "Value #G": "Uptime"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -110,19 +110,24 @@ android_farm_thermal_max_temperature_celsius > 45
 android_farm_battery_level < 20
 ```
 
-## Grafana example
+## Grafana dashboard
 
-A quick table/stat dashboard can be built from these panels:
+A ready-made dashboard lives at
+[`grafana/adb_exporter-dashboard.json`](grafana/adb_exporter-dashboard.json).
 
-- **Online devices** (Stat): `sum(android_farm_adb_online)`
-- **Per-device CPU** (Time series): `android_farm_cpu_usage_percent`
-- **Memory used %** (Time series): `android_farm_memory_used_percent`
-- **Battery level** (Table): `android_farm_battery_level` with `device` as the label column
-- **Battery temperature** (Time series): `android_farm_battery_temperature_celsius`
-- **Scrape success** (State timeline): `android_farm_adb_scrape_success`
+Import it in Grafana via **Dashboards → New → Import → Upload JSON file** (or paste
+the contents), then pick your Prometheus data source when prompted. It exposes a
+`Device` multi-select variable driven by the `device` label, plus panels for:
 
-Import by creating a new dashboard and adding panels with the queries above; the
-single `device` label makes per-device breakdowns and table columns trivial.
+- online / discovered devices, failing scrapes and poll overruns (stats)
+- CPU usage and memory used % (time series)
+- battery level and temperatures — battery + thermal max (time series)
+- uptime and free `/data` storage (time series / bar gauge)
+- screen on/off (state timeline)
+- a per-device overview table (CPU, memory, battery, temperature, free storage, uptime)
+
+The single `device` label makes per-device breakdowns and table columns trivial,
+so the dashboard scales from one device to a whole farm without changes.
 
 ## Exported metrics
 
