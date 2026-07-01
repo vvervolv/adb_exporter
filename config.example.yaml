@@ -1,0 +1,18 @@
+# adb_exporter configuration (all values shown are the built-in defaults).
+# Any omitted key falls back to its default, so this whole file is optional.
+
+# HTTP listen address for /metrics, /health and /ready.
+listen: ":9105"
+
+# Minimum spacing between poll cycles. Cycles never overlap: if a cycle is still
+# running when the next tick fires, the tick is skipped (see android_farm_poll_overruns_total).
+poll_interval: 5s
+
+# adb executable: a bare name resolved via PATH, or an absolute path.
+adb_path: adb
+
+# Timeout for every single adb invocation. Must be smaller than poll_interval.
+adb_timeout: 3s
+
+# Maximum number of concurrent adb processes (the worker pool size).
+max_parallel_adb: 8

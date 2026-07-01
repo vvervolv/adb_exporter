@@ -1,0 +1,17 @@
+# Binaries
+/adb_exporter
+/adb_exporter.exe
+/dist/
+*.exe
+*.test
+*.out
+
+# Coverage
+coverage.txt
+coverage.html
+
+# Editor / OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
