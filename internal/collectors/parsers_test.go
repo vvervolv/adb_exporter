@@ -198,28 +198,23 @@ func TestParsePowerPriority(t *testing.T) {
 }
 
 func TestParseFull(t *testing.T) {
-	output := `cpu  200 0 200 1400 200 0 0 0
-cpu0 100 0 100 700 100 0 0 0
-###MEM###
-MemTotal:        4000000 kB
-MemAvailable:    1000000 kB
-###BATTERY###
-  level: 50
-  status: 2
-  temperature: 280
-  voltage: 3900
-###UPTIME###
-5000.25 10000.5
-###DF###
-Filesystem     1K-blocks     Used Available Use% Mounted on
-/dev/block/dm-5 100000000 40000000  60000000  40% /
-###POWER###
-Display Power: state=ON
-###THERMAL###
-40000
-45000
-###END###
-`
+	output := "cpu  200 0 200 1400 200 0 0 0\n" +
+		"cpu0 100 0 100 700 100 0 0 0\n" +
+		markerMem + "\n" +
+		"MemTotal:        4000000 kB\n" +
+		"MemAvailable:    1000000 kB\n" +
+		markerBattery + "\n" +
+		"  level: 50\n  status: 2\n  temperature: 280\n  voltage: 3900\n" +
+		markerUptime + "\n" +
+		"5000.25 10000.5\n" +
+		markerDF + "\n" +
+		"Filesystem     1K-blocks     Used Available Use% Mounted on\n" +
+		"/dev/block/dm-5 100000000 40000000  60000000  40% /\n" +
+		markerPower + "\n" +
+		"Display Power: state=ON\n" +
+		markerThermal + "\n" +
+		"40000\n45000\n" +
+		markerEnd + "\n"
 	s := Parse(output)
 	if !s.CPUOK || s.CPU.Total != 2000 {
 		t.Errorf("cpu = %+v ok=%v", s.CPU, s.CPUOK)
@@ -247,7 +242,7 @@ Display Power: state=ON
 
 func TestParseMissingSections(t *testing.T) {
 	// Only CPU + END; every other section absent → their metrics stay unset.
-	output := "cpu  100 0 100 700 100 0 0 0\n###END###\n"
+	output := "cpu  100 0 100 700 100 0 0 0\n" + markerEnd + "\n"
 	s := Parse(output)
 	if !s.CPUOK {
 		t.Error("cpu should parse")

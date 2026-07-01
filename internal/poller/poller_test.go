@@ -71,7 +71,7 @@ func (s *fakeSink) snapshot() []metrics.DeviceSnapshot {
 
 func statOutput(total, idle uint64) string {
 	// cpu user nice system idle iowait ... → total = (total-idle)+idle
-	return fmt.Sprintf("cpu %d 0 0 %d 0 0 0 0\n###END###\n", total-idle, idle)
+	return fmt.Sprintf("cpu %d 0 0 %d 0 0 0 0\n@@@END@@@\n", total-idle, idle)
 }
 
 func discardLogger() *slog.Logger {

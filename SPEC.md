@@ -163,13 +163,19 @@ same invocation works identically on Windows, Linux and macOS.
 Canonical invocation:
 
 ```
-adb -s <serial> shell "cat /proc/stat; echo ###MEM###; cat /proc/meminfo; echo ###BATTERY###; dumpsys battery; echo ###UPTIME###; cat /proc/uptime; echo ###DF###; df -k /; echo ###POWER###; dumpsys power; echo ###THERMAL###; cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null; echo ###END###"
+adb -s <serial> shell "cat /proc/stat; echo @@@MEM@@@; cat /proc/meminfo; echo @@@BATTERY@@@; dumpsys battery; echo @@@UPTIME@@@; cat /proc/uptime; echo @@@DF@@@; df -k /; echo @@@POWER@@@; dumpsys power; echo @@@THERMAL@@@; cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null; echo @@@END@@@"
 ```
 
 Notes:
 
-- Separator markers are bare tokens (`###MEM###`, `###BATTERY###`, …) printed on
-  their own line. A trailing `###END###` marks the end of output.
+- Separator markers are bare tokens (`@@@MEM@@@`, `@@@BATTERY@@@`, …) printed on
+  their own line. A trailing `@@@END@@@` marks the end of output.
+- **Markers must NOT contain `#`.** In the on-device POSIX shell (mksh/toybox) a
+  word beginning with `#` starts a comment, so `echo ###MEM###` prints nothing and
+  — because the whole command is a single line — comments out *everything after
+  it*, collapsing all sections into one. `@` has no special shell meaning and
+  needs no quoting, so `@@@…@@@` markers are safe and portable. This is verified
+  by a regression test that runs the command through a real shell.
 - `df -k /` is used (POSIX 1K-blocks) instead of `df /`, because the default
   `df` output format is not stable across toybox/busybox versions. See §Storage parsing.
 - The `thermal_zone*` glob is expanded by the **on-device** shell, so it must stay
