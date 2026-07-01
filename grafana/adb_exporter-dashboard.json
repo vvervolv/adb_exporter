@@ -12,7 +12,7 @@
       }
     ]
   },
-  "description": "Per-device metrics from adb_exporter (Prometheus exporter for Android devices over adb).",
+  "description": "Fleet health for adb_exporter: worst-in-fleet at a glance, a device overview sorted by risk, and trends for the volatile signals.",
   "editable": true,
   "graphTooltip": 1,
   "refresh": "10s",
@@ -58,7 +58,7 @@
   "timezone": "",
   "title": "adb_exporter — Android device farm",
   "uid": "adb-exporter",
-  "version": 1,
+  "version": 2,
   "panels": [
     {
       "id": 1,
@@ -66,11 +66,13 @@
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 4, "w": 6, "x": 0, "y": 0 },
+      "description": "Devices reporting state=device right now.",
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "textMode": "auto"
+        "textMode": "value"
       },
       "fieldConfig": {
         "defaults": {
@@ -80,51 +82,22 @@
         "overrides": []
       },
       "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "sum(android_farm_adb_online{device=~\"$device\"})",
-          "refId": "A"
-        }
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(android_farm_adb_online{device=~\"$device\"})", "refId": "A" }
       ]
     },
     {
       "id": 2,
-      "title": "Devices discovered",
-      "type": "stat",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "textMode": "auto"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "text", "value": null } ] }
-        },
-        "overrides": []
-      },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_devices_total",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 3,
       "title": "Scrapes failing",
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 0 },
+      "description": "Online devices whose last scrape did not parse. 0 is healthy.",
       "options": {
         "colorMode": "value",
         "graphMode": "none",
+        "justifyMode": "auto",
         "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "textMode": "auto"
+        "textMode": "value"
       },
       "fieldConfig": {
         "defaults": {
@@ -134,237 +107,144 @@
         "overrides": []
       },
       "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "sum(1 - android_farm_adb_scrape_success{device=~\"$device\"})",
-          "refId": "A"
-        }
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "sum(1 - android_farm_adb_scrape_success{device=~\"$device\"})", "refId": "A" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Hottest device",
+      "type": "stat",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 0 },
+      "description": "Highest thermal-zone reading across the selected fleet.",
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "textMode": "value"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "decimals": 1,
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 40 }, { "color": "red", "value": 45 } ] }
+        },
+        "overrides": []
+      },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "max(android_farm_thermal_max_temperature_celsius{device=~\"$device\"})", "refId": "A" }
       ]
     },
     {
       "id": 4,
-      "title": "Poll overruns",
+      "title": "Lowest battery",
       "type": "stat",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
       "gridPos": { "h": 4, "w": 6, "x": 18, "y": 0 },
+      "description": "Lowest charge level across the selected fleet.",
       "options": {
         "colorMode": "value",
-        "graphMode": "area",
+        "graphMode": "none",
+        "justifyMode": "auto",
         "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
-        "textMode": "auto"
+        "textMode": "value"
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 1 } ] }
+          "unit": "percent",
+          "decimals": 0,
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "orange", "value": 20 }, { "color": "green", "value": 50 } ] }
         },
         "overrides": []
       },
       "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_poll_overruns_total",
-          "refId": "A"
-        }
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "min(android_farm_battery_level{device=~\"$device\"})", "refId": "A" }
       ]
     },
     {
       "id": 5,
-      "title": "CPU usage",
-      "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "min": 0,
-          "max": 100,
-          "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" }
-        },
-        "overrides": []
-      },
-      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_cpu_usage_percent{device=~\"$device\"}",
-          "legendFormat": "{{device}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 6,
-      "title": "Memory used",
-      "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "min": 0,
-          "max": 100,
-          "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" }
-        },
-        "overrides": []
-      },
-      "options": { "legend": { "displayMode": "table", "placement": "right", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_memory_used_percent{device=~\"$device\"}",
-          "legendFormat": "{{device}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 7,
-      "title": "Battery level",
-      "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "percent",
-          "min": 0,
-          "max": 100,
-          "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" },
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 20 }, { "color": "green", "value": 50 } ] }
-        },
-        "overrides": []
-      },
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_battery_level{device=~\"$device\"}",
-          "legendFormat": "{{device}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 8,
-      "title": "Temperatures (battery & thermal max)",
-      "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 12 },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "celsius",
-          "custom": { "drawStyle": "line", "fillOpacity": 10, "showPoints": "never" },
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 40 }, { "color": "red", "value": 45 } ] }
-        },
-        "overrides": []
-      },
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_battery_temperature_celsius{device=~\"$device\"}",
-          "legendFormat": "battery {{device}}",
-          "refId": "A"
-        },
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_thermal_max_temperature_celsius{device=~\"$device\"}",
-          "legendFormat": "thermal {{device}}",
-          "refId": "B"
-        }
-      ]
-    },
-    {
-      "id": 9,
-      "title": "Uptime",
-      "type": "timeseries",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "custom": { "drawStyle": "line", "fillOpacity": 0, "showPoints": "never" }
-        },
-        "overrides": []
-      },
-      "options": { "legend": { "displayMode": "list", "placement": "bottom" }, "tooltip": { "mode": "multi", "sort": "desc" } },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_uptime_seconds{device=~\"$device\"}",
-          "legendFormat": "{{device}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 10,
-      "title": "Storage free (/data)",
-      "type": "bargauge",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 20 },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "bytes",
-          "min": 0,
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "yellow", "value": 2000000000 }, { "color": "green", "value": 10000000000 } ] }
-        },
-        "overrides": []
-      },
-      "options": { "displayMode": "gradient", "orientation": "horizontal", "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false }, "showUnfilled": true },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_storage_free_bytes{device=~\"$device\"}",
-          "legendFormat": "{{device}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 11,
-      "title": "Screen on",
-      "type": "state-timeline",
-      "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 20 },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": { "fillOpacity": 80, "lineWidth": 0 },
-          "mappings": [
-            { "type": "value", "options": { "0": { "text": "off", "color": "blue" }, "1": { "text": "on", "color": "green" } } }
-          ],
-          "thresholds": { "mode": "absolute", "steps": [ { "color": "blue", "value": null }, { "color": "green", "value": 1 } ] }
-        },
-        "overrides": []
-      },
-      "options": { "showValue": "never", "mergeValues": true, "alignValue": "left", "rowHeight": 0.9, "legend": { "displayMode": "list", "placement": "bottom" } },
-      "targets": [
-        {
-          "datasource": { "type": "prometheus", "uid": "${datasource}" },
-          "expr": "android_farm_screen_on{device=~\"$device\"}",
-          "legendFormat": "{{device}}",
-          "refId": "A"
-        }
-      ]
-    },
-    {
-      "id": 12,
-      "title": "Device overview",
+      "title": "Device overview — worst first",
       "type": "table",
       "datasource": { "type": "prometheus", "uid": "${datasource}" },
-      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 28 },
-      "options": { "showHeader": true, "cellHeight": "sm", "footer": { "show": false } },
+      "description": "One row per device, sorted so the hottest device is on top. Colour marks where to look.",
+      "gridPos": { "h": 11, "w": 24, "x": 0, "y": 4 },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm",
+        "footer": { "show": false },
+        "sortBy": [ { "displayName": "Thermal °C", "desc": true } ]
+      },
       "fieldConfig": {
         "defaults": { "custom": { "align": "auto", "filterable": true } },
         "overrides": [
-          { "matcher": { "id": "byName", "options": "CPU %" }, "properties": [ { "id": "unit", "value": "percent" }, { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }, { "id": "min", "value": 0 }, { "id": "max", "value": 100 } ] },
-          { "matcher": { "id": "byName", "options": "Mem %" }, "properties": [ { "id": "unit", "value": "percent" }, { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }, { "id": "min", "value": 0 }, { "id": "max", "value": 100 } ] },
-          { "matcher": { "id": "byName", "options": "Battery %" }, "properties": [ { "id": "unit", "value": "percent" }, { "id": "min", "value": 0 }, { "id": "max", "value": 100 } ] },
-          { "matcher": { "id": "byName", "options": "Battery °C" }, "properties": [ { "id": "unit", "value": "celsius" } ] },
-          { "matcher": { "id": "byName", "options": "Free /data" }, "properties": [ { "id": "unit", "value": "bytes" } ] },
-          { "matcher": { "id": "byName", "options": "Uptime" }, "properties": [ { "id": "unit", "value": "s" } ] },
-          { "matcher": { "id": "byName", "options": "Online" }, "properties": [ { "id": "custom.cellOptions", "value": { "type": "color-text" } }, { "id": "mappings", "value": [ { "type": "value", "options": { "0": { "text": "offline", "color": "red" }, "1": { "text": "online", "color": "green" } } } ] } ] }
+          {
+            "matcher": { "id": "byName", "options": "Online" },
+            "properties": [
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "custom.width", "value": 90 },
+              { "id": "mappings", "value": [ { "type": "value", "options": { "0": { "text": "offline", "color": "red", "index": 0 }, "1": { "text": "online", "color": "green", "index": 1 } } } ] }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "CPU %" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "decimals", "value": 0 },
+              { "id": "min", "value": 0 },
+              { "id": "max", "value": 100 },
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Mem %" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "decimals", "value": 0 },
+              { "id": "min", "value": 0 },
+              { "id": "max", "value": 100 },
+              { "id": "custom.cellOptions", "value": { "type": "gauge", "mode": "gradient" } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Battery %" },
+            "properties": [
+              { "id": "unit", "value": "percent" },
+              { "id": "decimals", "value": 0 },
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "orange", "value": 20 }, { "color": "green", "value": 50 } ] } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Battery °C" },
+            "properties": [
+              { "id": "unit", "value": "celsius" },
+              { "id": "decimals", "value": 1 },
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 38 }, { "color": "red", "value": 43 } ] } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Thermal °C" },
+            "properties": [
+              { "id": "unit", "value": "celsius" },
+              { "id": "decimals", "value": 1 },
+              { "id": "custom.cellOptions", "value": { "type": "color-background", "mode": "gradient" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "orange", "value": 40 }, { "color": "red", "value": 45 } ] } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Free /data" },
+            "properties": [
+              { "id": "unit", "value": "bytes" },
+              { "id": "custom.cellOptions", "value": { "type": "color-text" } },
+              { "id": "thresholds", "value": { "mode": "absolute", "steps": [ { "color": "red", "value": null }, { "color": "orange", "value": 2000000000 }, { "color": "green", "value": 10000000000 } ] } }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Uptime" },
+            "properties": [ { "id": "unit", "value": "s" }, { "id": "decimals", "value": 0 } ]
+          }
         ]
       },
       "targets": [
@@ -373,16 +253,22 @@
         { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_memory_used_percent{device=~\"$device\"}", "format": "table", "instant": true, "refId": "C" },
         { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_battery_level{device=~\"$device\"}", "format": "table", "instant": true, "refId": "D" },
         { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_battery_temperature_celsius{device=~\"$device\"}", "format": "table", "instant": true, "refId": "E" },
-        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_storage_free_bytes{device=~\"$device\"}", "format": "table", "instant": true, "refId": "F" },
-        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_uptime_seconds{device=~\"$device\"}", "format": "table", "instant": true, "refId": "G" }
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_thermal_max_temperature_celsius{device=~\"$device\"}", "format": "table", "instant": true, "refId": "F" },
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_storage_free_bytes{device=~\"$device\"}", "format": "table", "instant": true, "refId": "G" },
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_uptime_seconds{device=~\"$device\"}", "format": "table", "instant": true, "refId": "H" }
       ],
       "transformations": [
         { "id": "joinByField", "options": { "byField": "device", "mode": "outer" } },
         {
           "id": "organize",
           "options": {
-            "excludeByName": { "Time": true, "Time 1": true, "Time 2": true, "Time 3": true, "Time 4": true, "Time 5": true, "Time 6": true, "Time 7": true, "__name__": true, "__name__ 1": true, "__name__ 2": true, "__name__ 3": true, "__name__ 4": true, "__name__ 5": true, "__name__ 6": true, "__name__ 7": true },
-            "indexByName": {},
+            "excludeByName": {
+              "Time": true, "Time 1": true, "Time 2": true, "Time 3": true, "Time 4": true, "Time 5": true, "Time 6": true, "Time 7": true, "Time 8": true,
+              "__name__": true, "__name__ 1": true, "__name__ 2": true, "__name__ 3": true, "__name__ 4": true, "__name__ 5": true, "__name__ 6": true, "__name__ 7": true, "__name__ 8": true
+            },
+            "indexByName": {
+              "device": 0, "Value #A": 1, "Value #F": 2, "Value #E": 3, "Value #B": 4, "Value #C": 5, "Value #D": 6, "Value #G": 7, "Value #H": 8
+            },
             "renameByName": {
               "device": "Device",
               "Value #A": "Online",
@@ -390,11 +276,78 @@
               "Value #C": "Mem %",
               "Value #D": "Battery %",
               "Value #E": "Battery °C",
-              "Value #F": "Free /data",
-              "Value #G": "Uptime"
+              "Value #F": "Thermal °C",
+              "Value #G": "Free /data",
+              "Value #H": "Uptime"
             }
           }
         }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "CPU usage",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 15 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": { "drawStyle": "line", "fillOpacity": 12, "showPoints": "never", "lineWidth": 2 }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_cpu_usage_percent{device=~\"$device\"}", "legendFormat": "{{device}}", "refId": "A" }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Memory used",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 15 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "min": 0,
+          "max": 100,
+          "custom": { "drawStyle": "line", "fillOpacity": 12, "showPoints": "never", "lineWidth": 2 }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["mean", "max"] }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_memory_used_percent{device=~\"$device\"}", "legendFormat": "{{device}}", "refId": "A" }
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Temperature",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "description": "Max thermal-zone temperature per device. Red line marks the 45 °C throttling watch level.",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 15 },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "custom": {
+            "drawStyle": "line",
+            "fillOpacity": 12,
+            "showPoints": "never",
+            "lineWidth": 2,
+            "thresholdsStyle": { "mode": "line" }
+          },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "transparent", "value": null }, { "color": "red", "value": 45 } ] }
+        },
+        "overrides": []
+      },
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["max"] }, "tooltip": { "mode": "multi", "sort": "desc" } },
+      "targets": [
+        { "datasource": { "type": "prometheus", "uid": "${datasource}" }, "expr": "android_farm_thermal_max_temperature_celsius{device=~\"$device\"}", "legendFormat": "{{device}}", "refId": "A" }
       ]
     }
   ]
