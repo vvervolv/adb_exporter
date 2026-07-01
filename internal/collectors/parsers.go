@@ -148,9 +148,12 @@ func parseUptime(section string, m *DeviceMetrics) {
 	}
 }
 
-// parseDF reads `df -k /` (1K-blocks). It joins all non-header data fields so a
-// filesystem name that wraps onto a second line is handled, then reads the
+// parseDF reads `df -k /data` (1K-blocks). It joins all non-header data fields so
+// a filesystem name that wraps onto a second line is handled, then reads the
 // numeric columns from the end: ... <1K-blocks> <Used> <Available> <Use%> <Mount>.
+//
+// /data (userdata) is used rather than / because on Android / is a read-only
+// system root that is always ~100% full and carries no useful capacity signal.
 func parseDF(section string, m *DeviceMetrics) {
 	var fields []string
 	for _, line := range strings.Split(section, "\n") {

@@ -31,7 +31,7 @@ const ShellCommand = "cat /proc/stat" +
 	"; echo " + markerMem + "; cat /proc/meminfo" +
 	"; echo " + markerBattery + "; dumpsys battery" +
 	"; echo " + markerUptime + "; cat /proc/uptime" +
-	"; echo " + markerDF + "; df -k /" +
+	"; echo " + markerDF + "; df -k /data" +
 	"; echo " + markerPower + "; dumpsys power" +
 	"; echo " + markerThermal + "; cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null" +
 	"; echo " + markerEnd

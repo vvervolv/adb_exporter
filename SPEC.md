@@ -163,7 +163,7 @@ same invocation works identically on Windows, Linux and macOS.
 Canonical invocation:
 
 ```
-adb -s <serial> shell "cat /proc/stat; echo @@@MEM@@@; cat /proc/meminfo; echo @@@BATTERY@@@; dumpsys battery; echo @@@UPTIME@@@; cat /proc/uptime; echo @@@DF@@@; df -k /; echo @@@POWER@@@; dumpsys power; echo @@@THERMAL@@@; cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null; echo @@@END@@@"
+adb -s <serial> shell "cat /proc/stat; echo @@@MEM@@@; cat /proc/meminfo; echo @@@BATTERY@@@; dumpsys battery; echo @@@UPTIME@@@; cat /proc/uptime; echo @@@DF@@@; df -k /data; echo @@@POWER@@@; dumpsys power; echo @@@THERMAL@@@; cat /sys/class/thermal/thermal_zone*/temp 2>/dev/null; echo @@@END@@@"
 ```
 
 Notes:
@@ -176,7 +176,7 @@ Notes:
   it*, collapsing all sections into one. `@` has no special shell meaning and
   needs no quoting, so `@@@…@@@` markers are safe and portable. This is verified
   by a regression test that runs the command through a real shell.
-- `df -k /` is used (POSIX 1K-blocks) instead of `df /`, because the default
+- `df -k /data` is used (POSIX 1K-blocks) instead of `df /`, because the default
   `df` output format is not stable across toybox/busybox versions. See §Storage parsing.
 - The `thermal_zone*` glob is expanded by the **on-device** shell, so it must stay
   inside the quoted command string.
@@ -206,7 +206,7 @@ Full metric names, types and units:
 | `android_farm_memory_available_bytes` | Gauge | bytes |
 | `android_farm_memory_used_bytes` | Gauge | bytes (`total - available`) |
 | `android_farm_memory_used_percent` | Gauge | 0–100 |
-| `android_farm_storage_total_bytes` | Gauge | bytes (from `df -k /`, ×1024) |
+| `android_farm_storage_total_bytes` | Gauge | bytes (from `df -k /data`, ×1024) |
 | `android_farm_storage_free_bytes` | Gauge | bytes |
 | `android_farm_storage_used_bytes` | Gauge | bytes |
 | `android_farm_battery_level` | Gauge | 0–100 |
@@ -237,12 +237,16 @@ Full metric names, types and units:
   millidegrees Celsius (e.g. `48000` → `48.0 °C`). Divide by 1000. As a sanity
   guard, if a raw value is `< 1000` treat it as already-degrees and use as-is.
 
-### Storage parsing (`df -k /`)
+### Storage parsing (`df -k /data`)
 
 Output is in 1K-blocks. Multiply the `1K-blocks`, `Used` and `Available` columns
 by 1024 to get bytes. The parser MUST tolerate the case where a long filesystem
 name wraps the row onto two physical lines (locate the numeric columns from the
 end of the record, not by fixed field index).
+
+`/data` (userdata) is measured rather than `/`: on Android `/` is a read-only
+system root that is always ~100% full and carries no useful capacity signal,
+whereas `/data` reflects real device storage.
 
 ---
 
@@ -651,7 +655,7 @@ MIT
 1. **Single-line shell command** — the batch scrape is passed to `adb shell` as one
    `;`-separated string (no host `sh -c`, no newlines), so it behaves identically on
    Windows/Linux/macOS. Added `###END###` marker. See §Single adb shell.
-2. **Storage** — use `df -k /` (stable POSIX 1K-blocks ×1024) instead of `df /`;
+2. **Storage** — use `df -k /data` (stable POSIX 1K-blocks ×1024) instead of `df /`;
    tolerate wrapped rows. See §Storage parsing.
 3. **CPU usage** — computed from a `/proc/stat` delta; poller keeps a per-device
    previous-sample store separate from the published snapshot; first value appears on
