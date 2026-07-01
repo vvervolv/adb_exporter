@@ -117,17 +117,18 @@ A ready-made dashboard lives at
 
 Import it in Grafana via **Dashboards → New → Import → Upload JSON file** (or paste
 the contents), then pick your Prometheus data source when prompted. It exposes a
-`Device` multi-select variable driven by the `device` label, plus panels for:
+`Device` multi-select variable driven by the `device` label.
 
-- online / discovered devices, failing scrapes and poll overruns (stats)
-- CPU usage and memory used % (time series)
-- battery level and temperatures — battery + thermal max (time series)
-- uptime and free `/data` storage (time series / bar gauge)
-- screen on/off (state timeline)
-- a per-device overview table (CPU, memory, battery, temperature, free storage, uptime)
+The layout answers one question first — *is the fleet healthy, and which device
+needs attention?*
 
-The single `device` label makes per-device breakdowns and table columns trivial,
-so the dashboard scales from one device to a whole farm without changes.
+- **Worst-in-fleet stats:** devices online, scrapes failing, hottest device, lowest battery.
+- **Device overview table (the centrepiece):** one row per device, sorted hottest-first, with colour-coded CPU, memory, battery, battery/thermal temperature, free `/data`, and uptime — so a whole farm is scannable at a glance.
+- **Trends for the volatile signals only:** CPU, memory, and temperature over time (with a 45 °C watch line on temperature).
+
+Monotonic or low-signal series (uptime-as-a-line, screen on/off) are intentionally
+left out of the charts and surfaced as table columns instead. The single `device`
+label lets the same dashboard scale from one device to a whole farm unchanged.
 
 ## Exported metrics
 
@@ -146,7 +147,7 @@ raw `adb` serial), except the exporter self-metrics which have no labels.
 | `android_farm_memory_available_bytes` | Gauge | bytes |
 | `android_farm_memory_used_bytes` | Gauge | bytes |
 | `android_farm_memory_used_percent` | Gauge | 0–100 |
-| `android_farm_storage_total_bytes` | Gauge | bytes (`/`) |
+| `android_farm_storage_total_bytes` | Gauge | bytes (`/data`) |
 | `android_farm_storage_free_bytes` | Gauge | bytes |
 | `android_farm_storage_used_bytes` | Gauge | bytes |
 | `android_farm_battery_level` | Gauge | 0–100 |
