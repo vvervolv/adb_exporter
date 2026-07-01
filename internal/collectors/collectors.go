@@ -7,20 +7,26 @@ import "strings"
 
 // Separator markers emitted between sections by ShellCommand. They are printed
 // on their own line by `echo`.
+//
+// IMPORTANT: markers must not contain '#'. In the on-device POSIX shell
+// (mksh/toybox), a word beginning with '#' starts a comment, so `echo #FOO#`
+// prints an empty line and the marker is silently swallowed. '@' has no special
+// meaning and needs no quoting, which keeps the command portable across
+// Windows/Linux/macOS adb without nested-quote headaches.
 const (
-	markerMem     = "###MEM###"
-	markerBattery = "###BATTERY###"
-	markerUptime  = "###UPTIME###"
-	markerDF      = "###DF###"
-	markerPower   = "###POWER###"
-	markerThermal = "###THERMAL###"
-	markerEnd     = "###END###"
+	markerMem     = "@@@MEM@@@"
+	markerBattery = "@@@BATTERY@@@"
+	markerUptime  = "@@@UPTIME@@@"
+	markerDF      = "@@@DF@@@"
+	markerPower   = "@@@POWER@@@"
+	markerThermal = "@@@THERMAL@@@"
+	markerEnd     = "@@@END@@@"
 )
 
 // ShellCommand is the single one-line command executed per device per cycle.
 // It is passed to `adb -s <serial> shell "<ShellCommand>"` as one argument;
 // no host shell is involved (SPEC §Single adb shell). Sections are separated by
-// bare markers and terminated by ###END###.
+// bare markers and terminated by @@@END@@@.
 const ShellCommand = "cat /proc/stat" +
 	"; echo " + markerMem + "; cat /proc/meminfo" +
 	"; echo " + markerBattery + "; dumpsys battery" +
