@@ -3,7 +3,7 @@ module github.com/vvervolv/adb_exporter
 go 1.24
 
 require (
-	github.com/kardianos/service v1.2.4
+	github.com/kardianos/service v1.3.0
 	github.com/prometheus/client_golang v1.23.2
 	gopkg.in/yaml.v3 v3.0.1
 )
